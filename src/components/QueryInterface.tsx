@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Send, Sparkles, Loader2 } from 'lucide-react';
+import { MessageSquare, Send, Sparkles, Loader2, Bot, User } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -13,6 +14,8 @@ interface Message {
   timestamp: string;
 }
 
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/market-chat`;
+
 const QueryInterface = () => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,21 +23,29 @@ const QueryInterface = () => {
     {
       id: '1',
       type: 'assistant',
-      content: '您好！我是FinAI智能助手，可以帮您分析市场数据、解读新闻舆情、生成投资洞察。请问有什么可以帮您？',
+      content: '您好！我是FinAI智能助手，基于先进的AI模型，可以帮您分析市场数据、解读新闻舆情、生成投资洞察。请问有什么可以帮您？',
       timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const sampleQueries = [
     '今日市场整体情绪如何？',
     '分析AI板块的投资机会',
     '降准对银行股有何影响？',
-    '新能源汽车产业链前景分析',
+    '新能源汽车产业链前景',
   ];
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -43,37 +54,126 @@ const QueryInterface = () => {
       timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setQuery('');
     setIsLoading(true);
 
-    // Simulate AI response (will be replaced with actual LLM integration)
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'assistant',
-        content: generateMockResponse(userMessage.content),
-        timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsLoading(false);
-    }, 1500);
-  };
+    let assistantContent = '';
+    const assistantId = (Date.now() + 1).toString();
 
-  const generateMockResponse = (query: string): string => {
-    if (query.includes('情绪')) {
-      return '根据今日市场舆情分析，整体情绪偏向乐观。主要利好因素包括：1) 央行降准释放流动性；2) AI芯片概念持续活跃。综合情绪指数为68，处于偏多区间。建议关注成长股机会。';
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: newMessages.map((m) => ({
+            role: m.type === 'user' ? 'user' : 'assistant',
+            content: m.content,
+          })),
+        }),
+      });
+
+      if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({}));
+        throw new Error(errorData.error || `请求失败: ${resp.status}`);
+      }
+
+      if (!resp.body) {
+        throw new Error("无响应数据");
+      }
+
+      // Add empty assistant message that we'll update
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: assistantId,
+          type: 'assistant',
+          content: '',
+          timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId ? { ...m, content: assistantContent } : m
+                )
+              );
+            }
+          } catch {
+            // Incomplete JSON, put back and wait
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Final flush
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split("\n")) {
+          if (!raw) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          if (raw.startsWith(":") || raw.trim() === "") continue;
+          if (!raw.startsWith("data: ")) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantContent += content;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId ? { ...m, content: assistantContent } : m
+                )
+              );
+            }
+          } catch { /* ignore */ }
+        }
+      }
+
+    } catch (error) {
+      console.error('Chat error:', error);
+      toast({
+        title: "请求失败",
+        description: error instanceof Error ? error.message : "服务暂时不可用，请稍后重试",
+        variant: "destructive",
+      });
+      // Remove the empty assistant message on error
+      setMessages((prev) => prev.filter((m) => m.id !== assistantId));
+    } finally {
+      setIsLoading(false);
     }
-    if (query.includes('AI') || query.includes('人工智能')) {
-      return 'AI板块今日上涨3.24%，领涨两市。英伟达新品发布带动全球AI产业链情绪，国产GPU替代逻辑加强。建议关注：算力基础设施、AI应用软件、数据中心等细分领域。风险提示：估值偏高，注意把控仓位。';
-    }
-    if (query.includes('降准') || query.includes('银行')) {
-      return '降准0.5个百分点释放约1.2万亿流动性，对银行板块整体利好。具体影响：1) 资金成本降低，净息差有望改善；2) 信贷投放能力增强；3) 流动性充裕利好估值修复。优选大型国有银行和优质城商行。';
-    }
-    if (query.includes('新能源') || query.includes('汽车')) {
-      return '新能源汽车11月销量115万辆，渗透率突破40%创新高。产业链投资建议：1) 整车：关注具有品牌力和规模优势的龙头；2) 电池：宁德时代等一线厂商受益；3) 材料：碳酸锂价格企稳，正极材料龙头值得关注。';
-    }
-    return '感谢您的提问。根据当前市场数据和舆情分析，我将为您提供详细的分析报告。请注意，以上分析仅供参考，不构成投资建议。投资有风险，决策需谨慎。';
   };
 
   const handleSampleQuery = (q: string) => {
@@ -85,21 +185,26 @@ const QueryInterface = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <MessageSquare className="w-4 h-4 text-primary" />
-          自然语言查询
+          AI智能分析
           <Badge variant="outline" className="ml-auto text-xs bg-primary/10 text-primary border-primary/30">
             <Sparkles className="w-3 h-3 mr-1" />
-            LLM驱动
+            Gemini驱动
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col p-0">
-        <ScrollArea className="flex-1 px-4">
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+        <ScrollArea className="flex-1 px-4" ref={scrollRef}>
           <div className="space-y-4 pb-4">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
+                {message.type === 'assistant' && (
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Bot className="w-4 h-4 text-primary" />
+                  </div>
+                )}
                 <div
                   className={`max-w-[85%] p-3 rounded-lg ${
                     message.type === 'user'
@@ -107,17 +212,25 @@ const QueryInterface = () => {
                       : 'bg-secondary/50'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm whitespace-pre-wrap">{message.content || '...'}</p>
                   <span className="text-xs opacity-70 mt-1 block">{message.timestamp}</span>
                 </div>
+                {message.type === 'user' && (
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                )}
               </div>
             ))}
-            {isLoading && (
-              <div className="flex justify-start">
+            {isLoading && messages[messages.length - 1]?.type === 'user' && (
+              <div className="flex gap-3 justify-start">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4 text-primary" />
+                </div>
                 <div className="bg-secondary/50 p-3 rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">正在分析...</span>
+                    <span className="text-sm">正在分析中...</span>
                   </div>
                 </div>
               </div>
@@ -134,6 +247,7 @@ const QueryInterface = () => {
                 size="sm"
                 className="text-xs h-7"
                 onClick={() => handleSampleQuery(q)}
+                disabled={isLoading}
               >
                 {q}
               </Button>
@@ -149,7 +263,7 @@ const QueryInterface = () => {
               disabled={isLoading}
             />
             <Button type="submit" size="icon" disabled={isLoading || !query.trim()}>
-              <Send className="w-4 h-4" />
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </form>
         </div>

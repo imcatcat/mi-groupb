@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Database, Cloud, Cpu, Globe, AlertCircle } from 'lucide-react';
+import { Database, Cloud, Cpu, Globe, AlertCircle, Check } from 'lucide-react';
 
 interface DataSource {
   name: string;
@@ -27,11 +27,11 @@ const DataSourceStatus = () => {
       lastUpdate: '刚刚',
     },
     {
-      name: 'LLM 引擎',
+      name: 'Lovable AI',
       icon: <Cpu className="w-4 h-4" />,
       status: 'connected',
-      description: 'GPT模型接口',
-      lastUpdate: '在线',
+      description: 'Gemini 2.5 Flash',
+      lastUpdate: '已连接',
     },
     {
       name: '分析引擎',
@@ -47,10 +47,7 @@ const DataSourceStatus = () => {
       case 'connected':
         return (
           <Badge className="bg-success/20 text-success border-success/30">
-            <span className="relative flex h-2 w-2 mr-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-            </span>
+            <Check className="w-3 h-3 mr-1" />
             已连接
           </Badge>
         );
@@ -85,7 +82,9 @@ const DataSourceStatus = () => {
             className="flex items-center justify-between p-3 rounded-lg bg-secondary/30"
           >
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                source.status === 'connected' ? 'bg-primary/10 text-primary' : 'bg-warning/10 text-warning'
+              }`}>
                 {source.icon}
               </div>
               <div>
