@@ -16,29 +16,29 @@ const DataSourceStatus = () => {
       name: 'Wind API',
       icon: <Database className="w-4 h-4" />,
       status: 'pending',
-      description: '实时行情数据源',
-      lastUpdate: '待接入',
+      description: 'Real-time market data',
+      lastUpdate: 'Pending',
     },
     {
-      name: '新闻数据流',
+      name: 'News Feed',
       icon: <Globe className="w-4 h-4" />,
       status: 'connected',
-      description: '财经新闻聚合',
-      lastUpdate: '刚刚',
+      description: 'Financial news aggregator',
+      lastUpdate: 'Just now',
     },
     {
       name: 'Lovable AI',
       icon: <Cpu className="w-4 h-4" />,
       status: 'connected',
       description: 'Gemini 2.5 Flash',
-      lastUpdate: '已连接',
+      lastUpdate: 'Connected',
     },
     {
-      name: '分析引擎',
+      name: 'Analytics Engine',
       icon: <Cloud className="w-4 h-4" />,
       status: 'connected',
-      description: '情绪分析 & 信号生成',
-      lastUpdate: '运行中',
+      description: 'Sentiment & Signal Generation',
+      lastUpdate: 'Running',
     },
   ];
 
@@ -48,20 +48,20 @@ const DataSourceStatus = () => {
         return (
           <Badge className="bg-success/20 text-success border-success/30">
             <Check className="w-3 h-3 mr-1" />
-            已连接
+            Connected
           </Badge>
         );
       case 'pending':
         return (
           <Badge className="bg-warning/20 text-warning border-warning/30">
             <AlertCircle className="w-3 h-3 mr-1" />
-            待接入
+            Pending
           </Badge>
         );
       default:
         return (
           <Badge variant="secondary">
-            离线
+            Offline
           </Badge>
         );
     }
@@ -72,7 +72,7 @@ const DataSourceStatus = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Database className="w-4 h-4 text-primary" />
-          数据源状态
+          Data Sources
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

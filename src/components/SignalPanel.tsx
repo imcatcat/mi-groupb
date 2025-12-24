@@ -12,21 +12,21 @@ const SignalPanel = () => {
           bg: 'bg-success/10',
           border: 'border-success/30',
           icon: <TrendingUp className="w-4 h-4 text-success" />,
-          badge: <Badge className="bg-success/20 text-success border-success/30">买入</Badge>
+          badge: <Badge className="bg-success/20 text-success border-success/30">Buy</Badge>
         };
       case 'sell':
         return {
           bg: 'bg-destructive/10',
           border: 'border-destructive/30',
           icon: <TrendingDown className="w-4 h-4 text-destructive" />,
-          badge: <Badge className="bg-destructive/20 text-destructive border-destructive/30">卖出</Badge>
+          badge: <Badge className="bg-destructive/20 text-destructive border-destructive/30">Sell</Badge>
         };
       default:
         return {
           bg: 'bg-muted',
           border: 'border-border',
           icon: <Pause className="w-4 h-4 text-muted-foreground" />,
-          badge: <Badge variant="secondary">观望</Badge>
+          badge: <Badge variant="secondary">Hold</Badge>
         };
     }
   };
@@ -42,7 +42,7 @@ const SignalPanel = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Activity className="w-4 h-4 text-primary" />
-          信号指标面板
+          Signal Indicators
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -74,8 +74,8 @@ const SignalPanel = () => {
                   </div>
                   
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">指标值: <span className="font-mono text-foreground">{indicator.value}</span></span>
-                    <span className="text-muted-foreground">置信度: <span className="font-mono text-primary">{Math.round(indicator.confidence * 100)}%</span></span>
+                    <span className="text-muted-foreground">Value: <span className="font-mono text-foreground">{indicator.value}</span></span>
+                    <span className="text-muted-foreground">Confidence: <span className="font-mono text-primary">{Math.round(indicator.confidence * 100)}%</span></span>
                   </div>
                 </div>
               </TooltipTrigger>

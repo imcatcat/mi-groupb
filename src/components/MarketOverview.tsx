@@ -8,7 +8,7 @@ const MarketOverview = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <BarChart3 className="w-4 h-4 text-primary" />
-          市场概览
+          Market Overview
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">

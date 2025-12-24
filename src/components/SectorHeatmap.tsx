@@ -20,7 +20,7 @@ const SectorHeatmap = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <LayoutGrid className="w-4 h-4 text-primary" />
-          行业板块走势
+          Sector Performance
         </CardTitle>
       </CardHeader>
       <CardContent>
