@@ -1,7 +1,7 @@
 import { newsItems } from '@/lib/mockData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Newspaper, AlertCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Newspaper, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const NewsFeed = () => {
@@ -12,21 +12,21 @@ const NewsFeed = () => {
   };
 
   const getSentimentLabel = (sentiment: number) => {
-    if (sentiment > 0.5) return { text: '强烈看涨', class: 'signal-positive' };
-    if (sentiment > 0.2) return { text: '偏多', class: 'signal-positive' };
-    if (sentiment < -0.5) return { text: '强烈看跌', class: 'signal-negative' };
-    if (sentiment < -0.2) return { text: '偏空', class: 'signal-negative' };
-    return { text: '中性', class: 'signal-neutral' };
+    if (sentiment > 0.5) return { text: 'Strong Buy', class: 'signal-positive' };
+    if (sentiment > 0.2) return { text: 'Bullish', class: 'signal-positive' };
+    if (sentiment < -0.5) return { text: 'Strong Sell', class: 'signal-negative' };
+    if (sentiment < -0.2) return { text: 'Bearish', class: 'signal-negative' };
+    return { text: 'Neutral', class: 'signal-neutral' };
   };
 
   const getImpactBadge = (impact: string) => {
     switch (impact) {
       case 'high':
-        return <Badge variant="destructive" className="text-xs">高影响</Badge>;
+        return <Badge variant="destructive" className="text-xs">High Impact</Badge>;
       case 'medium':
-        return <Badge variant="secondary" className="text-xs bg-warning/20 text-warning border-warning/30">中影响</Badge>;
+        return <Badge variant="secondary" className="text-xs bg-warning/20 text-warning border-warning/30">Medium</Badge>;
       default:
-        return <Badge variant="secondary" className="text-xs">低影响</Badge>;
+        return <Badge variant="secondary" className="text-xs">Low</Badge>;
     }
   };
 
@@ -35,13 +35,13 @@ const NewsFeed = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Newspaper className="w-4 h-4 text-primary" />
-          新闻与市场评论
+          News & Commentary
           <Badge variant="outline" className="ml-auto text-xs">
             <span className="relative flex h-2 w-2 mr-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
             </span>
-            实时更新
+            Live
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -81,7 +81,7 @@ const NewsFeed = () => {
                   </div>
                   
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/50">
-                    <span className="text-xs text-muted-foreground">相关板块:</span>
+                    <span className="text-xs text-muted-foreground">Related:</span>
                     {news.relatedSectors.map((sector) => (
                       <Badge key={sector} variant="outline" className="text-xs py-0">
                         {sector}

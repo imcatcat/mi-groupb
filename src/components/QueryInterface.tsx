@@ -23,18 +23,18 @@ const QueryInterface = () => {
     {
       id: '1',
       type: 'assistant',
-      content: '您好！我是FinAI智能助手，基于先进的AI模型，可以帮您分析市场数据、解读新闻舆情、生成投资洞察。请问有什么可以帮您？',
-      timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+      content: 'Hello! I am FinAI, your intelligent market assistant powered by advanced AI. I can help you analyze market data, interpret news sentiment, and generate investment insights. How can I assist you today?',
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const sampleQueries = [
-    '今日市场整体情绪如何？',
-    '分析AI板块的投资机会',
-    '降准对银行股有何影响？',
-    '新能源汽车产业链前景',
+    'What is the overall market sentiment today?',
+    'Analyze AI sector investment opportunities',
+    'How does rate cut affect banking stocks?',
+    'EV industry outlook and trends',
   ];
 
   useEffect(() => {
@@ -51,7 +51,7 @@ const QueryInterface = () => {
       id: Date.now().toString(),
       type: 'user',
       content: query,
-      timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
 
     const newMessages = [...messages, userMessage];
@@ -79,11 +79,11 @@ const QueryInterface = () => {
 
       if (!resp.ok) {
         const errorData = await resp.json().catch(() => ({}));
-        throw new Error(errorData.error || `请求失败: ${resp.status}`);
+        throw new Error(errorData.error || `Request failed: ${resp.status}`);
       }
 
       if (!resp.body) {
-        throw new Error("无响应数据");
+        throw new Error("No response data");
       }
 
       // Add empty assistant message that we'll update
@@ -93,7 +93,7 @@ const QueryInterface = () => {
           id: assistantId,
           type: 'assistant',
           content: '',
-          timestamp: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
 
@@ -165,8 +165,8 @@ const QueryInterface = () => {
     } catch (error) {
       console.error('Chat error:', error);
       toast({
-        title: "请求失败",
-        description: error instanceof Error ? error.message : "服务暂时不可用，请稍后重试",
+        title: "Request Failed",
+        description: error instanceof Error ? error.message : "Service temporarily unavailable. Please try again later.",
         variant: "destructive",
       });
       // Remove the empty assistant message on error
@@ -185,10 +185,10 @@ const QueryInterface = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <MessageSquare className="w-4 h-4 text-primary" />
-          AI智能分析
+          AI Analysis
           <Badge variant="outline" className="ml-auto text-xs bg-primary/10 text-primary border-primary/30">
             <Sparkles className="w-3 h-3 mr-1" />
-            Gemini驱动
+            Gemini Powered
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -230,7 +230,7 @@ const QueryInterface = () => {
                 <div className="bg-secondary/50 p-3 rounded-lg">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="text-sm">正在分析中...</span>
+                    <span className="text-sm">Analyzing...</span>
                   </div>
                 </div>
               </div>
@@ -258,7 +258,7 @@ const QueryInterface = () => {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="输入您的问题，例如：分析今日半导体板块走势..."
+              placeholder="Enter your question, e.g.: Analyze semiconductor sector trends..."
               className="flex-1 bg-secondary/30"
               disabled={isLoading}
             />

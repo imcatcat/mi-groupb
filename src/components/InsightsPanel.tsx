@@ -32,13 +32,13 @@ const InsightsPanel = () => {
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'critical':
-        return <Badge variant="destructive" className="text-xs">紧急</Badge>;
+        return <Badge variant="destructive" className="text-xs">Critical</Badge>;
       case 'high':
-        return <Badge className="text-xs bg-warning/20 text-warning border-warning/30">重要</Badge>;
+        return <Badge className="text-xs bg-warning/20 text-warning border-warning/30">Important</Badge>;
       case 'medium':
-        return <Badge variant="secondary" className="text-xs">一般</Badge>;
+        return <Badge variant="secondary" className="text-xs">Medium</Badge>;
       default:
-        return <Badge variant="outline" className="text-xs">低优先级</Badge>;
+        return <Badge variant="outline" className="text-xs">Low Priority</Badge>;
     }
   };
 
@@ -47,9 +47,9 @@ const InsightsPanel = () => {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <Zap className="w-4 h-4 text-primary" />
-          AI 智能洞察
+          AI Insights
           <Badge variant="outline" className="ml-auto text-xs bg-primary/10 text-primary border-primary/30">
-            AI生成
+            AI Generated
           </Badge>
         </CardTitle>
       </CardHeader>

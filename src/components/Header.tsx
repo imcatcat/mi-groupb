@@ -2,12 +2,12 @@ import { Activity, Bell, Settings, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const Header = () => {
-  const currentTime = new Date().toLocaleTimeString('zh-CN', { 
+  const currentTime = new Date().toLocaleTimeString('en-US', { 
     hour: '2-digit', 
     minute: '2-digit',
     second: '2-digit'
   });
-  const currentDate = new Date().toLocaleDateString('zh-CN', {
+  const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -35,7 +35,7 @@ const Header = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
             </span>
-            <span className="text-xs text-muted-foreground">实时连接</span>
+            <span className="text-xs text-muted-foreground">Live Connection</span>
           </div>
         </div>
 
